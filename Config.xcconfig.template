@@ -1,0 +1,15 @@
+// Config.xcconfig.template - Template configuration file for Maybe iOS app
+// Copy this file to Config.xcconfig and fill in your actual values
+// DO NOT commit Config.xcconfig to version control
+
+// OAuth Configuration
+MAYBE_OAUTH_CLIENT_ID = YOUR_OAUTH_CLIENT_ID_HERE
+MAYBE_BASE_URL = https:/$()/your-domain.com
+
+// API Configuration
+MAYBE_API_BASE_URL = https:/$()/your-domain.com/api/v1
+
+// OAuth Endpoints (update redirect URI if needed)
+MAYBE_OAUTH_REDIRECT_URI = maybeapp:/$()/oauth/callback
+
+// Note: The $(/) syntax is required for xcconfig files to properly parse URLs with //

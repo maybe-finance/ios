@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>OAuth Callback</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>maybeapp</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict/>
+	<key>MaybeOAuthClientID</key>
+	<string>$(MAYBE_OAUTH_CLIENT_ID)</string>
+	<key>MaybeBaseURL</key>
+	<string>$(MAYBE_BASE_URL)</string>
+	<key>MaybeAPIBaseURL</key>
+	<string>$(MAYBE_API_BASE_URL)</string>
+	<key>MaybeOAuthRedirectURI</key>
+	<string>$(MAYBE_OAUTH_REDIRECT_URI)</string>
+</dict>
+</plist>

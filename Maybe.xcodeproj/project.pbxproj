@@ -6,13 +6,31 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		6ABEC8802E0024C000485463 /* Config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 6ABEC87F2E0024C000485463 /* Config.xcconfig */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		6ABEC87F2E0024C000485463 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		6AFAB03F2DFC680B00DB4EC0 /* Maybe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Maybe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		6A46D3352DFC746700575427 /* Exceptions for "Maybe" folder in "Maybe" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 6AFAB03E2DFC680B00DB4EC0 /* Maybe */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		6AFAB0412DFC680B00DB4EC0 /* Maybe */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				6A46D3352DFC746700575427 /* Exceptions for "Maybe" folder in "Maybe" target */,
+			);
 			path = Maybe;
 			sourceTree = "<group>";
 		};
@@ -34,6 +52,7 @@
 			children = (
 				6AFAB0412DFC680B00DB4EC0 /* Maybe */,
 				6AFAB0402DFC680B00DB4EC0 /* Products */,
+				6ABEC87F2E0024C000485463 /* Config.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -94,6 +113,8 @@
 			);
 			mainGroup = 6AFAB0362DFC680B00DB4EC0;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6AFAB0402DFC680B00DB4EC0 /* Products */;
 			projectDirPath = "";
@@ -109,6 +130,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6ABEC8802E0024C000485463 /* Config.xcconfig in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,6 +149,7 @@
 /* Begin XCBuildConfiguration section */
 		6AFAB0482DFC680C00DB4EC0 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6ABEC87F2E0024C000485463 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -183,6 +206,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -191,6 +215,7 @@
 		};
 		6AFAB0492DFC680C00DB4EC0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6ABEC87F2E0024C000485463 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -248,6 +273,7 @@
 		};
 		6AFAB04B2DFC680C00DB4EC0 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6ABEC87F2E0024C000485463 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -256,6 +282,7 @@
 				DEVELOPMENT_TEAM = 8TQ4KDWF2S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Maybe/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -266,6 +293,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "";
+				"OTHER_LDFLAGS[arch=*]" = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.maybefinance.Maybe;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -276,6 +305,7 @@
 		};
 		6AFAB04C2DFC680C00DB4EC0 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6ABEC87F2E0024C000485463 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -284,6 +314,7 @@
 				DEVELOPMENT_TEAM = 8TQ4KDWF2S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Maybe/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
