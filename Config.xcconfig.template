@@ -2,14 +2,8 @@
 // Copy this file to Config.xcconfig and fill in your actual values
 // DO NOT commit Config.xcconfig to version control
 
-// OAuth Configuration
-MAYBE_OAUTH_CLIENT_ID = YOUR_OAUTH_CLIENT_ID_HERE
-MAYBE_BASE_URL = https:/$()/your-domain.com
-
 // API Configuration
-MAYBE_API_BASE_URL = https:/$()/your-domain.com/api/v1
-
-// OAuth Endpoints (update redirect URI if needed)
-MAYBE_OAUTH_REDIRECT_URI = maybeapp:/$()/oauth/callback
+MAYBE_API_BASE_URL = https:/$()/app.maybefinance.com/api/v1
 
 // Note: The $(/) syntax is required for xcconfig files to properly parse URLs with //
+// Replace app.maybefinance.com with your actual Maybe instance domain

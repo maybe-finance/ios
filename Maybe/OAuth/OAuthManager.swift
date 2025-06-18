@@ -9,6 +9,9 @@ import SwiftUI
 import Foundation
 import CryptoKit
 import AuthenticationServices
+#if os(iOS)
+import UIKit
+#endif
 
 // Note: This file depends on:
 // - MaybeOAuthConfig (OAuth/OAuthConfig.swift)
@@ -24,10 +27,12 @@ class MaybeOAuthManager: NSObject, ObservableObject {
     @Published var errorMessage: String?
 
     private var authSession: ASWebAuthenticationSession?
+    private var authContinuation: CheckedContinuation<TokenResponse, Error>?
     private var codeVerifier: String = ""
     private var codeChallenge: String = ""
+    private var pendingOAuthContinuation: CheckedContinuation<TokenResponse, Error>?
 
-    func authenticate(scopes: [String] = ["read"]) {
+    func authenticate(scopes: [String] = ["read_write"]) {
         print("🔐 === STARTING OAUTH AUTHENTICATION ===")
         print("   Requested scopes: \(scopes)")
         print("   Client ID: \(MaybeOAuthConfig.clientId)")
@@ -61,6 +66,91 @@ class MaybeOAuthManager: NSObject, ObservableObject {
                 self.isAuthenticated = false
             }
             isLoading = false
+        }
+    }
+    
+    // New method specifically for connecting accounts
+    func connectAccount(completion: @escaping (Bool, Error?) -> Void) {
+        print("🔐 === STARTING ACCOUNT CONNECTION FLOW ===")
+        
+        Task {
+            isLoading = true
+            do {
+                // Generate fresh PKCE parameters for this flow
+                generatePKCEParameters()
+                
+                // Build URL for account connection
+                var components = URLComponents(string: "\(MaybeOAuthConfig.baseURL)/connections/new")!
+                components.queryItems = [
+                    URLQueryItem(name: "redirect_uri", value: MaybeOAuthConfig.redirectUri),
+                    URLQueryItem(name: "oauth", value: "true")
+                ]
+                
+                guard let connectionURL = components.url else {
+                    throw OAuthError.invalidResponse
+                }
+                
+                print("🔐 Starting account connection flow with URL: \(connectionURL)")
+                
+                // Use a simplified auth session for account connections
+                try await performAccountConnectionFlow(connectionURL: connectionURL, completion: completion)
+                
+            } catch {
+                print("❌ Account connection error: \(error)")
+                completion(false, error)
+            }
+            isLoading = false
+        }
+    }
+    
+    private func performAccountConnectionFlow(connectionURL: URL, completion: @escaping (Bool, Error?) -> Void) async throws {
+        await withCheckedContinuation { continuation in
+            authSession = ASWebAuthenticationSession(
+                url: connectionURL,
+                callbackURLScheme: "maybeapp"
+            ) { callbackURL, error in
+                if let error = error {
+                    if (error as NSError).code == ASWebAuthenticationSessionError.canceledLogin.rawValue {
+                        print("🔐 User cancelled account connection")
+                        completion(false, nil)
+                    } else {
+                        print("❌ Account connection error: \(error)")
+                        completion(false, error)
+                    }
+                    continuation.resume()
+                    return
+                }
+                
+                // Check if the callback indicates success
+                if let callbackURL = callbackURL {
+                    print("✅ Account connection callback received: \(callbackURL)")
+                    
+                    // Parse the callback URL to check for success/error
+                    if let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false),
+                       let queryItems = components.queryItems {
+                        
+                        // Check for error in callback
+                        if let error = queryItems.first(where: { $0.name == "error" })?.value {
+                            print("❌ Account connection failed: \(error)")
+                            completion(false, OAuthError.serverError(error))
+                        } else {
+                            print("✅ Account connection successful")
+                            completion(true, nil)
+                        }
+                    } else {
+                        // Assume success if we got a callback without error
+                        completion(true, nil)
+                    }
+                } else {
+                    completion(false, OAuthError.invalidCallback)
+                }
+                
+                continuation.resume()
+            }
+            
+            authSession?.presentationContextProvider = self
+            authSession?.prefersEphemeralWebBrowserSession = false
+            authSession?.start()
         }
     }
 
@@ -117,27 +207,54 @@ class MaybeOAuthManager: NSObject, ObservableObject {
             URLQueryItem(name: "scope", value: scopes.joined(separator: " ")),
             URLQueryItem(name: "code_challenge", value: codeChallenge),
             URLQueryItem(name: "code_challenge_method", value: "S256"),
-            URLQueryItem(name: "state", value: generateRandomString(length: 32))
+            URLQueryItem(name: "state", value: generateRandomString(length: 32)),
+            // Add mobile parameter to ensure server redirects properly
+            URLQueryItem(name: "display", value: "mobile"),
+            URLQueryItem(name: "prompt", value: "consent")
         ]
         return components.url!
     }
 
     private func performAuthorizationFlow(authURL: URL) async throws -> TokenResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // Store continuation for manual callback handling
+            self.pendingOAuthContinuation = continuation
+            
+            print("🔐 Creating ASWebAuthenticationSession...")
+            print("   URL: \(authURL)")
+            print("   Callback Scheme: maybeapp")
+            
             authSession = ASWebAuthenticationSession(
                 url: authURL,
                 callbackURLScheme: "maybeapp"
             ) { callbackURL, error in
+                print("🔐 ASWebAuthenticationSession callback received")
+                
                 if let error = error {
+                    print("❌ Auth session error: \(error)")
+                    // Check if user cancelled
+                    if (error as NSError).code == ASWebAuthenticationSessionError.canceledLogin.rawValue {
+                        print("🔐 User cancelled the authentication")
+                    }
                     continuation.resume(throwing: error)
                     return
                 }
 
-                guard let callbackURL = callbackURL,
-                      let code = self.extractAuthorizationCode(from: callbackURL) else {
+                guard let callbackURL = callbackURL else {
+                    print("❌ No callback URL received")
                     continuation.resume(throwing: OAuthError.invalidCallback)
                     return
                 }
+                
+                print("✅ Callback URL received: \(callbackURL)")
+                
+                guard let code = self.extractAuthorizationCode(from: callbackURL) else {
+                    print("❌ Could not extract authorization code from callback URL")
+                    continuation.resume(throwing: OAuthError.invalidCallback)
+                    return
+                }
+                
+                print("✅ Authorization code extracted: \(code)")
 
                 Task {
                     do {
@@ -149,9 +266,20 @@ class MaybeOAuthManager: NSObject, ObservableObject {
                 }
             }
 
-            authSession?.presentationContextProvider = self
-            authSession?.prefersEphemeralWebBrowserSession = false
-            authSession?.start()
+            // Ensure we're on the main thread for UI operations
+            Task { @MainActor in
+                authSession?.presentationContextProvider = self
+                authSession?.prefersEphemeralWebBrowserSession = false
+                
+                print("🔐 Starting ASWebAuthenticationSession...")
+                let started = authSession?.start() ?? false
+                print("   Session started: \(started)")
+                
+                if !started {
+                    print("❌ Failed to start ASWebAuthenticationSession")
+                    continuation.resume(throwing: OAuthError.invalidResponse)
+                }
+            }
         }
     }
 
@@ -306,12 +434,78 @@ class MaybeOAuthManager: NSObject, ObservableObject {
     private func isTokenExpired(_ expirationDate: Date) -> Bool {
         return Date() >= expirationDate.addingTimeInterval(-300)
     }
+    
+    // Manual OAuth callback handler for when ASWebAuthenticationSession doesn't intercept the callback
+    func handleOAuthCallback(_ url: URL) async {
+        print("🔐 Manual OAuth callback handler invoked")
+        print("   URL: \(url)")
+        
+        // Extract the authorization code
+        guard let code = extractAuthorizationCode(from: url) else {
+            print("❌ Could not extract authorization code from callback URL")
+            pendingOAuthContinuation?.resume(throwing: OAuthError.invalidCallback)
+            return
+        }
+        
+        print("✅ Authorization code extracted: \(code)")
+        
+        // If we have a pending continuation, use it
+        if let continuation = pendingOAuthContinuation {
+            pendingOAuthContinuation = nil
+            
+            do {
+                let tokens = try await exchangeCodeForTokens(code: code)
+                continuation.resume(returning: tokens)
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        } else {
+            // Handle the OAuth callback independently
+            do {
+                let tokens = try await exchangeCodeForTokens(code: code)
+                
+                await MainActor.run {
+                    self.accessToken = tokens.accessToken
+                    self.isAuthenticated = true
+                    self.errorMessage = nil
+                }
+                
+                try storeTokensSecurely(tokens)
+                print("✅ Manual OAuth authentication complete!")
+            } catch {
+                print("❌ Manual OAuth authentication error: \(error)")
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isAuthenticated = false
+                }
+            }
+        }
+    }
 }
 
 extension MaybeOAuthManager: ASWebAuthenticationPresentationContextProviding {
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        print("🔐 Providing presentation anchor for ASWebAuthenticationSession")
         #if os(iOS)
-        return UIApplication.shared.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
+        // For iOS 15+, use the first active window scene
+        if let windowScene = UIApplication.shared.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+           let window = windowScene.windows.first(where: { $0.isKeyWindow }) {
+            print("✅ Found key window for presentation")
+            return window
+        }
+        
+        // Fallback to any window
+        if let window = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first {
+            print("⚠️ Using fallback window for presentation")
+            return window
+        }
+        
+        print("❌ No window found for presentation")
+        return ASPresentationAnchor()
         #elseif os(macOS)
         return NSApplication.shared.windows.first ?? ASPresentationAnchor()
         #else

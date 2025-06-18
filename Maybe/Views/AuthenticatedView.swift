@@ -8,13 +8,14 @@
 import SwiftUI
 
 // Note: This file depends on:
-// - MaybeOAuthManager (OAuth/OAuthManager.swift)
+// - MaybeAuthManager (Auth/MaybeAuthManager.swift)
 // - MaybeAPIClient (API/APIClient.swift)
 // - Account (Models/APIModels.swift)
 
 // MARK: - Home Tab View
 struct HomeTabView: View {
     @EnvironmentObject var apiClient: MaybeAPIClient
+    @EnvironmentObject var authManager: MaybeAuthManager
     @State private var accounts: [Account] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -320,7 +321,7 @@ struct ReadingTabView: View {
 
 // MARK: - Profile Tab View
 struct ProfileTabView: View {
-    @EnvironmentObject var oauthManager: MaybeOAuthManager
+    @EnvironmentObject var authManager: MaybeAuthManager
 
     var body: some View {
         VStack(spacing: 0) {
@@ -336,13 +337,22 @@ struct ProfileTabView: View {
                             .font(.geist(size: 80))
                             .foregroundColor(.blue)
 
-                        Text("Profile")
-                            .font(.geist(size: 28, weight: .black))
+                        if let user = authManager.currentUser {
+                            Text("\(user.firstName) \(user.lastName)")
+                                .font(.geist(size: 28, weight: .black))
+                            
+                            Text(user.email)
+                                .font(.geist(size: 15, weight: .light))
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("Profile")
+                                .font(.geist(size: 28, weight: .black))
 
-                        Text("Manage your account and preferences")
-                            .font(.geist(size: 15, weight: .light))
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
+                            Text("Manage your account and preferences")
+                                .font(.geist(size: 15, weight: .light))
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
                     }
                     .padding(.top, 32)
 
@@ -357,7 +367,7 @@ struct ProfileTabView: View {
 
                     // Logout Button
                     Button(action: {
-                        oauthManager.logout()
+                        authManager.logout()
                     }) {
                         HStack {
                             Image(systemName: "arrow.right.square")
@@ -451,7 +461,7 @@ struct CustomTabBar: View {
 
 // MARK: - Authenticated View
 struct AuthenticatedView: View {
-    @EnvironmentObject var oauthManager: MaybeOAuthManager
+    @EnvironmentObject var authManager: MaybeAuthManager
     @EnvironmentObject var apiClient: MaybeAPIClient
     @State private var selectedTab = 0
 
@@ -463,6 +473,7 @@ struct AuthenticatedView: View {
                 case 0:
                     HomeTabView()
                         .environmentObject(apiClient)
+                        .environmentObject(authManager)
                 case 1:
                     TimeTabView()
                 case 2:
@@ -471,7 +482,7 @@ struct AuthenticatedView: View {
                     ReadingTabView()
                 case 4:
                     ProfileTabView()
-                        .environmentObject(oauthManager)
+                        .environmentObject(authManager)
                 default:
                     EmptyView()
                 }

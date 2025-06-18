@@ -73,6 +73,13 @@ enum APIError: LocalizedError {
     case rateLimitExceeded
     case invalidResponse
     case serverError(String)
+    case invalidCredentials
+    case mfaRequired
+    case deviceInfoRequired
+    case tokenExpired
+    case networkError(Error)
+    case validationErrors([String])
+    case unknownError(String)
 
     var errorDescription: String? {
         switch self {
@@ -88,6 +95,20 @@ enum APIError: LocalizedError {
             return "Invalid response from server."
         case .serverError(let message):
             return "Server error: \(message)"
+        case .invalidCredentials:
+            return "Invalid email or password"
+        case .mfaRequired:
+            return "Two-factor authentication required"
+        case .deviceInfoRequired:
+            return "Device information is required"
+        case .tokenExpired:
+            return "Your session has expired"
+        case .networkError(let error):
+            return "Network error: \(error.localizedDescription)"
+        case .validationErrors(let errors):
+            return errors.joined(separator: "\n")
+        case .unknownError(let message):
+            return message
         }
     }
 }
