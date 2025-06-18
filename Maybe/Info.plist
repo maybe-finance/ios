@@ -25,5 +25,44 @@
 	<string>$(MAYBE_API_BASE_URL)</string>
 	<key>MaybeOAuthRedirectURI</key>
 	<string>$(MAYBE_OAUTH_REDIRECT_URI)</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Geist-Black.otf</string>
+		<string>Geist-BlackItalic.otf</string>
+		<string>Geist-Bold.otf</string>
+		<string>Geist-BoldItalic.otf</string>
+		<string>Geist-ExtraBold.otf</string>
+		<string>Geist-ExtraBoldItalic.otf</string>
+		<string>Geist-ExtraLight.otf</string>
+		<string>Geist-ExtraLightItalic.otf</string>
+		<string>Geist-Light.otf</string>
+		<string>Geist-LightItalic.otf</string>
+		<string>Geist-Medium.otf</string>
+		<string>Geist-MediumItalic.otf</string>
+		<string>Geist-Regular.otf</string>
+		<string>Geist-RegularItalic.otf</string>
+		<string>Geist-SemiBold.otf</string>
+		<string>Geist-SemiBoldItalic.otf</string>
+		<string>Geist-Thin.otf</string>
+		<string>Geist-ThinItalic.otf</string>
+		<string>GeistMono-Black.otf</string>
+		<string>GeistMono-BlackItalic.otf</string>
+		<string>GeistMono-Bold.otf</string>
+		<string>GeistMono-BoldItalic.otf</string>
+		<string>GeistMono-ExtraBold.otf</string>
+		<string>GeistMono-ExtraBoldItalic.otf</string>
+		<string>GeistMono-ExtraLight.otf</string>
+		<string>GeistMono-ExtraLightItalic.otf</string>
+		<string>GeistMono-Italic.otf</string>
+		<string>GeistMono-Light.otf</string>
+		<string>GeistMono-LightItalic.otf</string>
+		<string>GeistMono-Medium.otf</string>
+		<string>GeistMono-MediumItalic.otf</string>
+		<string>GeistMono-Regular.otf</string>
+		<string>GeistMono-SemiBold.otf</string>
+		<string>GeistMono-SemiBoldItalic.otf</string>
+		<string>GeistMono-Thin.otf</string>
+		<string>GeistMono-ThinItalic.otf</string>
+	</array>
 </dict>
 </plist>

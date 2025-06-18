@@ -10,7 +10,7 @@ struct TopHeaderView: View {
                 // Action for clock/time functionality
             }) {
                 Image(systemName: "clock")
-                    .font(.system(size: 24))
+                    .font(.geist(size: 24))
                     .foregroundColor(.primary)
             }
 
@@ -19,20 +19,25 @@ struct TopHeaderView: View {
             // Center - Calendar widget
             VStack(spacing: 2) {
                 Text(currentDate.formatted(.dateTime.weekday(.abbreviated).locale(Locale(identifier: "en_US"))))
-                    .font(.caption)
-                    .fontWeight(.medium)
+                    .font(.geist(size: 12, weight: .semibold))
                     .foregroundColor(.red)
                     .textCase(.uppercase)
 
                 Text(currentDate.formatted(.dateTime.day()))
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .font(.geist(size: 28, weight: .heavy))
                     .foregroundColor(.primary)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-                        .background(Color.gray.opacity(0.1))
-            .cornerRadius(12)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(red: 0, green: 0, blue: 0, opacity: 0.06))
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white)
+                        .padding(1)
+                }
+            )
 
             Spacer()
 
@@ -41,7 +46,7 @@ struct TopHeaderView: View {
                 // Action for menu
             }) {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 24))
+                    .font(.geist(size: 24))
                     .foregroundColor(.primary)
             }
         }

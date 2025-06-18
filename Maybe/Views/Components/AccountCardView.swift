@@ -9,12 +9,11 @@ struct AccountCardView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(account.name)
-                        .font(.headline)
-                        .fontWeight(.semibold)
+                        .font(.geist(size: 17, weight: .bold))
 
                     if let institution = account.institution {
                         Text(institution)
-                            .font(.subheadline)
+                            .font(.geist(size: 15, weight: .light))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -23,13 +22,12 @@ struct AccountCardView: View {
 
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(account.formattedBalance)
-                        .font(.title2)
-                        .fontWeight(.semibold)
+                        .font(.geist(size: 22, weight: .heavy))
                         .foregroundColor(.primary)
 
                     HStack(spacing: 8) {
                         Text(account.accountType.capitalized)
-                            .font(.caption)
+                            .font(.geist(size: 12, weight: .medium))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
                             .background(Color.blue.opacity(0.1))
@@ -37,7 +35,7 @@ struct AccountCardView: View {
                             .cornerRadius(4)
 
                         Text(account.classification.capitalized)
-                            .font(.caption)
+                            .font(.geist(size: 12, weight: .medium))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
                             .background(Color.gray.opacity(0.1))

@@ -17,15 +17,14 @@ struct LoginView: View {
     var body: some View {
         VStack(spacing: 30) {
             Image(systemName: "dollarsign.circle.fill")
-                .font(.system(size: 80))
+                .font(.geist(size: 80))
                 .foregroundColor(.blue)
 
             Text("Maybe Finance")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .font(.geist(size: 34, weight: .black))
 
             Text("Connect your Maybe account to view your financial data")
-                .font(.body)
+                .font(.geist(size: 17, weight: .light))
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
                 .padding(.horizontal)
@@ -42,6 +41,7 @@ struct LoginView: View {
                         Image(systemName: "link")
                     }
                     Text("Connect Maybe Account")
+                        .font(.geist(size: 17, weight: .semibold))
                 }
                 .frame(maxWidth: .infinity)
                 .padding()

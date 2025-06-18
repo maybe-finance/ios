@@ -41,6 +41,7 @@ struct ContentView: View {
                     LoginView()
                 }
             }
+            .background(Color(hex: "F0F0F0"))
         }
         .environmentObject(oauthManager)
         .onAppear {

@@ -32,19 +32,22 @@ struct HomeTabView: View {
                             ProgressView()
                                 .scaleEffect(1.2)
                             Text("Loading your accounts...")
-                                .font(.subheadline)
+                                .font(.geistSubheadline)
+                                .fontWeight(.light)
                                 .foregroundColor(.secondary)
                         }
                         .padding(.top, 40)
                     } else if accounts.isEmpty {
                         VStack(spacing: 12) {
                             Image(systemName: "creditcard")
-                                .font(.system(size: 48))
+                                .font(.geist(size: 48))
                                 .foregroundColor(.secondary)
                             Text("No accounts found")
-                                .font(.headline)
+                                .font(.geistHeadline)
+                                .fontWeight(.semibold)
                             Text("Connect your financial accounts to get started")
-                                .font(.subheadline)
+                                .font(.geistSubheadline)
+                                .fontWeight(.light)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
                         }
@@ -112,15 +115,17 @@ struct TimeTabView: View {
                     // Current Time Display
                     VStack(spacing: 8) {
                         Text("Current Time")
-                            .font(.headline)
+                            .font(.geistHeadline)
+                            .fontWeight(.medium)
                             .foregroundColor(.secondary)
 
                         Text(currentTime.formatted(.dateTime.hour().minute().second()))
-                            .font(.system(size: 48, weight: .light, design: .monospaced))
+                            .font(.geistMono(size: 48, weight: .ultraLight))
                             .foregroundColor(.primary)
 
                         Text(currentTime.formatted(.dateTime.weekday(.wide).month().day().year()))
-                            .font(.subheadline)
+                            .font(.geistSubheadline)
+                            .fontWeight(.light)
                             .foregroundColor(.secondary)
                     }
                     .padding(24)
@@ -130,14 +135,16 @@ struct TimeTabView: View {
                     // Time Zone Card
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Time Zone")
-                            .font(.headline)
+                            .font(.geistHeadline)
+                            .fontWeight(.semibold)
 
                         HStack {
                             Text(TimeZone.current.identifier)
-                                .font(.body)
+                                .font(.geistBody)
+                                .fontWeight(.medium)
                             Spacer()
                             Text(TimeZone.current.abbreviation() ?? "")
-                                .font(.subheadline)
+                                .font(.geistSubheadline)
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -172,12 +179,13 @@ struct AppsTabView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     Text("Apps & Services")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                        .font(.geistLargeTitle)
+                        .fontWeight(.black)
                         .padding(.top, 20)
 
                     Text("Manage your connected applications and services")
-                        .font(.subheadline)
+                        .font(.geistSubheadline)
+                        .fontWeight(.light)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
@@ -191,13 +199,13 @@ struct AppsTabView: View {
                                     .frame(height: 80)
                                     .overlay(
                                         Image(systemName: "app")
-                                            .font(.system(size: 32))
+                                            .font(.geist(size: 32))
                                             .foregroundColor(.secondary)
                                     )
 
                                 Text("App \(index + 1)")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
+                                    .font(.geistSubheadline)
+                                    .fontWeight(.semibold)
                             }
                             .padding(16)
                             .background(Color.white)
@@ -226,22 +234,24 @@ struct ReadingTabView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     Text("Reading")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+                        .font(.geistLargeTitle)
+                        .fontWeight(.black)
                         .padding(.top, 20)
 
                     Text("Your reading list and progress")
-                        .font(.subheadline)
+                        .font(.geistSubheadline)
+                        .fontWeight(.light)
                         .foregroundColor(.secondary)
 
                     // Reading stats
                     HStack(spacing: 20) {
                         VStack(spacing: 4) {
                             Text("12")
-                                .font(.title)
-                                .fontWeight(.bold)
+                                .font(.geistTitle)
+                                .fontWeight(.heavy)
                             Text("Books Read")
-                                .font(.caption)
+                                .font(.geistCaption)
+                                .fontWeight(.medium)
                                 .foregroundColor(.secondary)
                         }
                         .frame(maxWidth: .infinity)
@@ -251,10 +261,11 @@ struct ReadingTabView: View {
 
                         VStack(spacing: 4) {
                             Text("3")
-                                .font(.title)
-                                .fontWeight(.bold)
+                                .font(.geistTitle)
+                                .fontWeight(.heavy)
                             Text("In Progress")
-                                .font(.caption)
+                                .font(.geistCaption)
+                                .fontWeight(.medium)
                                 .foregroundColor(.secondary)
                         }
                         .frame(maxWidth: .infinity)
@@ -268,7 +279,8 @@ struct ReadingTabView: View {
                     VStack(spacing: 12) {
                         HStack {
                             Text("Currently Reading")
-                                .font(.headline)
+                                .font(.geistHeadline)
+                                .fontWeight(.semibold)
                             Spacer()
                         }
 
@@ -280,10 +292,11 @@ struct ReadingTabView: View {
 
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("Book Title \(index + 1)")
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
+                                        .font(.geistSubheadline)
+                                        .fontWeight(.semibold)
                                     Text("Author Name")
-                                        .font(.caption)
+                                        .font(.geistCaption)
+                                        .fontWeight(.light)
                                         .foregroundColor(.secondary)
                                     ProgressView(value: 0.3 + Double(index) * 0.2)
                                         .progressViewStyle(LinearProgressViewStyle(tint: .blue))
@@ -320,15 +333,14 @@ struct ProfileTabView: View {
                     // Profile Header
                     VStack(spacing: 16) {
                         Image(systemName: "person.circle.fill")
-                            .font(.system(size: 80))
+                            .font(.geist(size: 80))
                             .foregroundColor(.blue)
 
                         Text("Profile")
-                            .font(.title)
-                            .fontWeight(.bold)
+                            .font(.geist(size: 28, weight: .black))
 
                         Text("Manage your account and preferences")
-                            .font(.subheadline)
+                            .font(.geist(size: 15, weight: .light))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                     }
@@ -350,7 +362,7 @@ struct ProfileTabView: View {
                         HStack {
                             Image(systemName: "arrow.right.square")
                             Text("Logout")
-                                .fontWeight(.medium)
+                                .font(.geist(size: 17, weight: .semibold))
                         }
                         .foregroundColor(.red)
                         .frame(maxWidth: .infinity)
@@ -377,29 +389,63 @@ struct ProfileOptionRow: View {
     var body: some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
-                .font(.system(size: 20))
+                .font(.geist(size: 20))
                 .foregroundColor(.blue)
                 .frame(width: 32, height: 32)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.geist(size: 15, weight: .semibold))
                 Text(subtitle)
-                    .font(.caption)
+                    .font(.geist(size: 12, weight: .light))
                     .foregroundColor(.secondary)
             }
 
             Spacer()
 
             Image(systemName: "chevron.right")
-                .font(.system(size: 12))
+                .font(.geist(size: 12))
                 .foregroundColor(.secondary)
         }
         .padding(16)
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Custom Tab Bar
+struct CustomTabBar: View {
+    @Binding var selectedTab: Int
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<5) { index in
+                Button(action: {
+                    selectedTab = index
+                }) {
+                    VStack(spacing: 4) {
+                        Image(systemName: tabIcon(for: index))
+                            .font(.geist(size: 22))
+                            .foregroundColor(selectedTab == index ? .primary : .gray)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                }
+            }
+        }
+        .background(Color(hex: "F0F0F0"))
+    }
+    
+    private func tabIcon(for index: Int) -> String {
+        switch index {
+        case 0: return selectedTab == 0 ? "house.fill" : "house"
+        case 1: return selectedTab == 1 ? "chart.pie.fill" : "chart.pie"
+        case 2: return selectedTab == 2 ? "square.grid.2x2.fill" : "square.grid.2x2"
+        case 3: return selectedTab == 3 ? "book.fill" : "book"
+        case 4: return selectedTab == 4 ? "person.crop.circle.fill" : "person.crop.circle"
+        default: return ""
+        }
     }
 }
 
@@ -410,44 +456,37 @@ struct AuthenticatedView: View {
     @State private var selectedTab = 0
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            HomeTabView()
-                .environmentObject(apiClient)
-                .tabItem {
-                    Image(systemName: selectedTab == 0 ? "house.fill" : "house")
-                    Text("Home")
+        VStack(spacing: 0) {
+            // Content
+            Group {
+                switch selectedTab {
+                case 0:
+                    HomeTabView()
+                        .environmentObject(apiClient)
+                case 1:
+                    TimeTabView()
+                case 2:
+                    AppsTabView()
+                case 3:
+                    ReadingTabView()
+                case 4:
+                    ProfileTabView()
+                        .environmentObject(oauthManager)
+                default:
+                    EmptyView()
                 }
-                .tag(0)
-
-            TimeTabView()
-                .tabItem {
-                    Image(systemName: selectedTab == 1 ? "clock.fill" : "clock")
-                    Text("Time")
-                }
-                .tag(1)
-
-            AppsTabView()
-                .tabItem {
-                    Image(systemName: selectedTab == 2 ? "square.grid.2x2.fill" : "square.grid.2x2")
-                    Text("Apps")
-                }
-                .tag(2)
-
-            ReadingTabView()
-                .tabItem {
-                    Image(systemName: selectedTab == 3 ? "book.fill" : "book")
-                    Text("Reading")
-                }
-                .tag(3)
-
-            ProfileTabView()
-                .environmentObject(oauthManager)
-                .tabItem {
-                    Image(systemName: selectedTab == 4 ? "person.fill" : "person")
-                    Text("Profile")
-                }
-                .tag(4)
+            }
+            
+            // Custom Tab Bar
+            CustomTabBar(selectedTab: $selectedTab)
+                .background(GeometryReader { geometry in
+                    Color.clear
+                        .onAppear {
+                            print("Safe area bottom: \(geometry.safeAreaInsets.bottom)")
+                        }
+                })
         }
-        .accentColor(.primary)
+        .ignoresSafeArea(.keyboard)
+        .background(Color(hex: "F0F0F0"))
     }
 }
