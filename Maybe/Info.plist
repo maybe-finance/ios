@@ -6,6 +6,8 @@
 	<dict/>
 	<key>MaybeAPIBaseURL</key>
 	<string>$(MAYBE_API_BASE_URL)</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Geist-Black.otf</string>
