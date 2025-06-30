@@ -11,18 +11,18 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var authManager: MaybeAuthManager
     @StateObject private var apiClient = MaybeAPIClient(authManager: nil)
-    
+
     var body: some View {
         NavigationView {
             Group {
                 if authManager.isAuthenticated {
                     AuthenticatedView()
                         .environmentObject(apiClient)
+                        .background(Color(hex: "F0F0F0"))
                 } else {
                     LoginView()
                 }
             }
-            .background(Color(hex: "F0F0F0"))
         }
         .environmentObject(authManager)
         .onAppear {
