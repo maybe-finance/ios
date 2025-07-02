@@ -100,6 +100,7 @@ struct StoryProgressBar: View {
     let numberOfStories: Int
     let currentStory: Int
     let progress: Double
+    let isResetting: Bool
 
     var body: some View {
         HStack(spacing: 4) {
@@ -116,7 +117,8 @@ struct StoryProgressBar: View {
                             .fill(Color.black)
                             .cornerRadius(2)
                             .frame(width: progressWidth(for: index, in: geometry))
-                            .animation(.linear(duration: 0.2), value: progress)
+                            .animation(isResetting ? nil : .linear(duration: 0.2), value: progress)
+                            .animation(isResetting ? nil : .linear(duration: 0.2), value: currentStory)
                     }
                 }
                 .frame(height: 3)
@@ -162,13 +164,13 @@ struct OnboardingStory: View {
             // Title and Subtitle
             VStack(alignment: .leading, spacing: 8) {
                 Text(story.subtitle)
-                    .font(Font.custom("Geist-Regular", size: 20))
+                    .font(.geist(size: 20))
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(story.title)
-                    .font(Font.custom("Geist-SemiBold", size: 40))
+                    .font(.geist(size: 40, weight: .semibold))
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
                     .tracking(-1.5)
@@ -198,10 +200,11 @@ struct LoginView: View {
     @State private var currentStory = 0
     @State private var storyProgress: Double = 0
     @State private var timer: Timer?
+    @State private var isResetting = false
 
-    // Form states
-    @State private var showAuthSheet = false
-    @State private var isSignupMode = false
+    // Navigation states
+    @State private var showSignIn = false
+    @State private var showSignUp = false
 
     // Story duration in seconds
     private let storyDuration: Double = 5.0
@@ -346,7 +349,8 @@ struct LoginView: View {
     ]
 
         var body: some View {
-        ZStack {
+        NavigationStack {
+            ZStack {
             // Background image from launch screen
             Image("LaunchChartBackground")
                 .resizable()
@@ -359,7 +363,8 @@ struct LoginView: View {
                 StoryProgressBar(
                     numberOfStories: stories.count,
                     currentStory: currentStory,
-                    progress: storyProgress
+                    progress: storyProgress,
+                    isResetting: isResetting
                 )
 
                 // Story content
@@ -368,22 +373,20 @@ struct LoginView: View {
 
                 // Auth buttons
                 VStack(spacing: 12) {
-                                        Button(action: {
-                        isSignupMode = true
-                        showAuthSheet = true
-                    }) {
+                    NavigationLink(destination: AuthenticationView(isSignupMode: true)
+                        .environmentObject(authManager)
+                        .navigationBarHidden(true)) {
                         Text("Create account")
-                            .font(Font.custom("Geist-SemiBold", size: 17))
+                            .font(.geist(size: 17, weight: .semibold))
                     }
                     .buttonStyle(GlossyButtonStyle())
                     .zIndex(1) // Ensure button is above tap areas
 
-                    Button(action: {
-                        isSignupMode = false
-                        showAuthSheet = true
-                    }) {
+                    NavigationLink(destination: AuthenticationView(isSignupMode: false)
+                        .environmentObject(authManager)
+                        .navigationBarHidden(true)) {
                         Text("Sign in")
-                            .font(Font.custom("Geist-Medium", size: 17))
+                            .font(.geist(size: 17, weight: .medium))
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(Color.white)
@@ -393,7 +396,7 @@ struct LoginView: View {
                     .zIndex(1) // Ensure button is above tap areas
 
                     Text("By continuing, you agree to our\nTerms of Service and Privacy Policy.")
-                        .font(Font.custom("Geist-Regular", size: 12))
+                        .font(.geist(size: 12))
                         .foregroundColor(Color.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.top, 8)
@@ -430,18 +433,16 @@ struct LoginView: View {
                     .fill(Color.clear)
                     .frame(height: 200) // Reserve space for buttons
                     .allowsHitTesting(false) // Disable hit testing in button area
+                }
+                .ignoresSafeArea()
             }
-            .ignoresSafeArea()
+            .navigationBarHidden(true)
         }
         .onAppear {
             startTimer()
         }
         .onDisappear {
             stopTimer()
-        }
-        .sheet(isPresented: $showAuthSheet) {
-            AuthenticationSheet(isSignupMode: $isSignupMode)
-                .environmentObject(authManager)
         }
     }
 
@@ -471,8 +472,15 @@ struct LoginView: View {
             startTimer()
         } else {
             // Loop back to first story
+            isResetting = true
             currentStory = 0
             storyProgress = 0
+            
+            // Reset the flag after a short delay to allow the view to update
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isResetting = false
+            }
+            
             startTimer()
         }
     }
@@ -488,12 +496,12 @@ struct LoginView: View {
     }
 }
 
-// MARK: - Authentication Sheet
-struct AuthenticationSheet: View {
+// MARK: - Authentication View
+struct AuthenticationView: View {
     @EnvironmentObject var authManager: MaybeAuthManager
     @Environment(\.dismiss) var dismiss
 
-    @Binding var isSignupMode: Bool
+    @State var isSignupMode: Bool
 
     @State private var email = ""
     @State private var password = ""
@@ -503,157 +511,357 @@ struct AuthenticationSheet: View {
     @State private var otpCode = ""
     @State private var showPassword = false
     @State private var showConfirmPassword = false
+    
+    // Focus states
+    @FocusState private var emailFieldFocused: Bool
+    @FocusState private var passwordFieldFocused: Bool
+    @FocusState private var firstNameFieldFocused: Bool
+    @FocusState private var lastNameFieldFocused: Bool
+    @FocusState private var confirmPasswordFieldFocused: Bool
+    @FocusState private var otpFieldFocused: Bool
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                // Form Fields
-                VStack(spacing: 16) {
-                    // Name fields for signup
-                    if isSignupMode {
-                        HStack(spacing: 12) {
-                            TextField("First Name", text: $firstName)
-                                .textContentType(.givenName)
-                                .padding()
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(10)
-
-                            TextField("Last Name", text: $lastName)
-                                .textContentType(.familyName)
-                                .padding()
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(10)
-                        }
-                    }
-
-                    // Email field
-                    TextField("Email", text: $email)
-                        .textContentType(.emailAddress)
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(10)
-
-                    // Password field
+            ZStack {
+                // Background color
+                Color(red: 245/255, green: 245/255, blue: 245/255)
+                    .ignoresSafeArea()
+                    
+                VStack(spacing: 0) {
+                    // Navigation bar with buttons
                     HStack {
-                        if showPassword {
-                            TextField("Password", text: $password)
-                                .textContentType(isSignupMode ? .newPassword : .password)
-                        } else {
-                            SecureField("Password", text: $password)
-                                .textContentType(isSignupMode ? .newPassword : .password)
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.black)
+                                .frame(width: 32, height: 32)
+                                .background(Color(red: 229/255, green: 229/255, blue: 229/255))
+                                .clipShape(Circle())
                         }
-
-                        Button(action: { showPassword.toggle() }) {
-                            Image(systemName: showPassword ? "eye.slash.fill" : "eye.fill")
-                                .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            // TODO: Show help
+                        }) {
+                            Image(systemName: "questionmark")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.black)
+                                .frame(width: 32, height: 32)
+                                .background(Color(red: 229/255, green: 229/255, blue: 229/255))
+                                .clipShape(Circle())
                         }
                     }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(10)
-
-                    // Confirm password for signup
-                    if isSignupMode {
+                    .padding(.horizontal, 16)
+                    .padding(.top, 10) // Minimal top padding
+                    .padding(.bottom, 20)
+                    
+                    // Custom title
+                    HStack {
+                        Text(isSignupMode ? "Create Account" : "Sign in")
+                            .font(.geist(size: 34, weight: .semibold))
+                            .foregroundColor(.black)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
+                    
+                    // Header with subtitle
+                    if !isSignupMode {
                         HStack {
-                            if showConfirmPassword {
-                                TextField("Confirm Password", text: $confirmPassword)
-                            } else {
-                                SecureField("Confirm Password", text: $confirmPassword)
-                            }
+                            Text("Or Create Account")
+                                .font(.geist(size: 17, weight: .regular))
+                                .foregroundColor(Color(red: 115/255, green: 115/255, blue: 115/255))
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 32)
+                    }
+                    
+                    // Form Fields
+                    VStack(spacing: 16) {
+                        // Name fields for signup
+                        if isSignupMode {
+                            HStack(spacing: 12) {
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text("First Name")
+                                        .font(.geist(size: 13, weight: .medium))
+                                        .foregroundColor(Color(red: 115/255, green: 115/255, blue: 115/255))
+                                        .padding(.horizontal, 20)
+                                        .padding(.top, 16)
+                                        .padding(.bottom, 8)
+                                    
+                                    TextField("Enter first name", text: $firstName)
+                                        .textContentType(.givenName)
+                                        .font(.geist(size: 17))
+                                        .foregroundColor(.black)
+                                        .padding(.horizontal, 20)
+                                        .padding(.bottom, 16)
+                                }
+                                .background(Color.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.black, lineWidth: 2)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color(red: 229/255, green: 229/255, blue: 229/255), lineWidth: 1)
+                                        .padding(1)
+                                )
 
-                            Button(action: { showConfirmPassword.toggle() }) {
-                                Image(systemName: showConfirmPassword ? "eye.slash.fill" : "eye.fill")
-                                    .foregroundColor(.secondary)
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text("Last Name")
+                                        .font(.geist(size: 13, weight: .medium))
+                                        .foregroundColor(Color(red: 115/255, green: 115/255, blue: 115/255))
+                                        .padding(.horizontal, 20)
+                                        .padding(.top, 16)
+                                        .padding(.bottom, 8)
+                                    
+                                    TextField("Enter last name", text: $lastName)
+                                        .textContentType(.familyName)
+                                        .font(.geist(size: 17))
+                                        .foregroundColor(.black)
+                                        .padding(.horizontal, 20)
+                                        .padding(.bottom, 16)
+                                }
+                                .background(Color.white)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.black, lineWidth: 2)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color(red: 229/255, green: 229/255, blue: 229/255), lineWidth: 1)
+                                        .padding(1)
+                                )
                             }
                         }
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(10)
-                    }
 
-                    // MFA code field
-                    if authManager.isMFARequired && !isSignupMode {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Two-Factor Authentication")
-                                .font(.geist(size: 14, weight: .semibold))
-                                .foregroundColor(.secondary)
+                        // Email field
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("Email")
+                                .font(.geist(size: 13, weight: .medium))
+                                .foregroundColor(Color(red: 115/255, green: 115/255, blue: 115/255))
+                                .padding(.horizontal, 20)
+                                .padding(.top, 16)
+                                .padding(.bottom, 8)
+                            
+                            TextField("Enter email", text: $email)
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .autocapitalization(.none)
+                                .font(.geist(size: 17))
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 16)
+                                .focused($emailFieldFocused)
+                        }
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(emailFieldFocused ? Color(red: 11/255, green: 11/255, blue: 11/255) : Color(red: 11/255, green: 11/255, blue: 11/255).opacity(0.08), lineWidth: 1)
+                        )
+                        .shadow(color: emailFieldFocused ? Color(red: 11/255, green: 11/255, blue: 11/255).opacity(0.05) : Color(red: 11/255, green: 11/255, blue: 11/255).opacity(0.06), radius: emailFieldFocused ? 4 : 1, x: 0, y: emailFieldFocused ? 0 : 1)
 
-                            TextField("6-digit code", text: $otpCode)
-                                .keyboardType(.numberPad)
-                                .textContentType(.oneTimeCode)
-                                .padding()
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(10)
+                        // Password field
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("Password")
+                                .font(.geist(size: 13, weight: .medium))
+                                .foregroundColor(Color(red: 115/255, green: 115/255, blue: 115/255))
+                                .padding(.horizontal, 20)
+                                .padding(.top, 16)
+                                .padding(.bottom, 8)
+                            
+                            HStack {
+                                if showPassword {
+                                    TextField("Enter password", text: $password)
+                                        .textContentType(isSignupMode ? .newPassword : .password)
+                                        .font(.geist(size: 17))
+                                        .foregroundColor(.black)
+                                        .focused($passwordFieldFocused)
+                                } else {
+                                    SecureField("Enter password", text: $password)
+                                        .textContentType(isSignupMode ? .newPassword : .password)
+                                        .font(.geist(size: 17))
+                                        .foregroundColor(.black)
+                                        .focused($passwordFieldFocused)
+                                }
+
+                                Button(action: { showPassword.toggle() }) {
+                                    Image(systemName: showPassword ? "eye.slash" : "eye")
+                                        .foregroundColor(Color(red: 115/255, green: 115/255, blue: 115/255))
+                                        .font(.system(size: 18))
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 16)
+                        }
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(passwordFieldFocused ? Color(red: 11/255, green: 11/255, blue: 11/255) : Color(red: 11/255, green: 11/255, blue: 11/255).opacity(0.08), lineWidth: 1)
+                        )
+                        .shadow(color: passwordFieldFocused ? Color(red: 11/255, green: 11/255, blue: 11/255).opacity(0.05) : Color(red: 11/255, green: 11/255, blue: 11/255).opacity(0.06), radius: passwordFieldFocused ? 4 : 1, x: 0, y: passwordFieldFocused ? 0 : 1)
+
+                        // Confirm password for signup
+                        if isSignupMode {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("Confirm Password")
+                                    .font(.geist(size: 13, weight: .medium))
+                                    .foregroundColor(Color(red: 115/255, green: 115/255, blue: 115/255))
+                                    .padding(.horizontal, 20)
+                                    .padding(.top, 16)
+                                    .padding(.bottom, 8)
+                                
+                                HStack {
+                                    if showConfirmPassword {
+                                        TextField("Confirm password", text: $confirmPassword)
+                                            .font(.geist(size: 17))
+                                            .foregroundColor(.black)
+                                            .focused($confirmPasswordFieldFocused)
+                                    } else {
+                                        SecureField("Confirm password", text: $confirmPassword)
+                                            .font(.geist(size: 17))
+                                            .foregroundColor(.black)
+                                            .focused($confirmPasswordFieldFocused)
+                                    }
+
+                                    Button(action: { showConfirmPassword.toggle() }) {
+                                        Image(systemName: showConfirmPassword ? "eye.slash" : "eye")
+                                            .foregroundColor(Color(red: 115/255, green: 115/255, blue: 115/255))
+                                            .font(.system(size: 18))
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 16)
+                            }
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(confirmPasswordFieldFocused ? Color(red: 11/255, green: 11/255, blue: 11/255) : Color(red: 11/255, green: 11/255, blue: 11/255).opacity(0.08), lineWidth: 1)
+                            )
+                            .shadow(color: confirmPasswordFieldFocused ? Color(red: 11/255, green: 11/255, blue: 11/255).opacity(0.05) : Color(red: 11/255, green: 11/255, blue: 11/255).opacity(0.06), radius: confirmPasswordFieldFocused ? 4 : 1, x: 0, y: confirmPasswordFieldFocused ? 0 : 1)
+                        }
+
+                        // MFA code field
+                        if authManager.isMFARequired && !isSignupMode {
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text("Two-Factor Authentication")
+                                    .font(.geist(size: 13, weight: .medium))
+                                    .foregroundColor(Color(red: 115/255, green: 115/255, blue: 115/255))
+                                    .padding(.horizontal, 20)
+                                    .padding(.top, 16)
+                                    .padding(.bottom, 8)
+
+                                TextField("6-digit code", text: $otpCode)
+                                    .keyboardType(.numberPad)
+                                    .textContentType(.oneTimeCode)
+                                    .font(.geist(size: 17))
+                                    .foregroundColor(.black)
+                                    .padding(.horizontal, 20)
+                                    .padding(.bottom, 16)
+                            }
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.black, lineWidth: 2)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color(red: 229/255, green: 229/255, blue: 229/255), lineWidth: 1)
+                                    .padding(1)
+                            )
                         }
                     }
-                }
-                .padding(.top, 20)
+                    .padding(.horizontal, 16)
 
-                // Error message
-                if let error = authManager.error {
-                    Text(error)
-                        .font(.geist(size: 14))
-                        .foregroundColor(.red)
-                        .multilineTextAlignment(.center)
-                }
-
-                // Action button
-                Button(action: {
-                    if isSignupMode {
-                        handleSignup()
-                    } else {
-                        handleLogin()
+                    // Forgot password link (only for sign in)
+                    if !isSignupMode {
+                        HStack {
+                            Button(action: {
+                                // TODO: Handle forgot password
+                            }) {
+                                Text("Forgot password?")
+                                    .font(.geist(size: 15))
+                                    .foregroundColor(.black)
+                                    .underline()
+                            }
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12)
                     }
-                }) {
-                    HStack {
-                        if authManager.isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                .scaleEffect(0.8)
+                    
+                    // Error message
+                    if let error = authManager.error {
+                        HStack {
+                            Text(error)
+                                .font(.geist(size: 14))
+                                .foregroundColor(.red)
+                                .multilineTextAlignment(.leading)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
+                    }
+                    
+                    Spacer()
+
+                    // Action button
+                    Button(action: {
+                        if isSignupMode {
+                            handleSignup()
                         } else {
-                            Image(systemName: isSignupMode ? "person.badge.plus" : "arrow.right.circle.fill")
+                            handleLogin()
                         }
-                        Text(isSignupMode ? "Create Account" : "Sign In")
-                            .font(.geist(size: 17, weight: .semibold))
+                    }) {
+                        HStack {
+                            if authManager.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .scaleEffect(0.8)
+                            }
+                            Text(isSignupMode ? "Create Account" : "Sign in")
+                                .font(.geist(size: 17, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(isFormValid ? Color.black : Color.gray)
+                        .foregroundColor(.white)
+                        .cornerRadius(28)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(isFormValid ? Color.blue : Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-                .disabled(!isFormValid || authManager.isLoading)
+                    .disabled(!isFormValid || authManager.isLoading)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 20)
 
-                // Toggle between login and signup
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        isSignupMode.toggle()
-                        clearForm()
-                    }
-                }) {
-                    HStack {
-                        Text(isSignupMode ? "Already have an account?" : "Don't have an account?")
-                            .foregroundColor(.secondary)
-                        Text(isSignupMode ? "Sign In" : "Sign Up")
-                            .foregroundColor(.blue)
-                            .fontWeight(.semibold)
-                    }
-                    .font(.geist(size: 15))
-                }
-
-                Spacer()
-            }
-            .padding(.horizontal)
-            .navigationTitle(isSignupMode ? "Create Account" : "Sign In")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Cancel") {
-                        dismiss()
+                    // Toggle between login and signup
+                    if isSignupMode {
+                        Button(action: {
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                isSignupMode.toggle()
+                                clearForm()
+                            }
+                        }) {
+                            HStack {
+                                Text("Already have an account?")
+                                    .font(.geist(size: 15))
+                                    .foregroundColor(.secondary)
+                                Text("Sign In")
+                                    .font(.geist(size: 15, weight: .semibold))
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .padding(.bottom, 40)
                     }
                 }
             }
+            .navigationBarHidden(true)
         }
+        .accentColor(.black)
     }
 
     // MARK: - Helper Methods
