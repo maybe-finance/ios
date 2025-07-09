@@ -12,19 +12,41 @@ This is a native iOS application for Maybe Finance built with SwiftUI. The app i
 - Build: Use Xcode's build command (Cmd+B) or the "Build" button
 - Run: Use Xcode's run command (Cmd+R) or the "Run" button
 - Clean build: Cmd+Shift+K in Xcode
+- **Always run xcodebuild after any code changes to make sure the code builds without error**
 
 ### Testing
 - Test API connectivity: The app includes built-in connection testing via `apiClient.testAPIConnection()`
 - No unit test framework is currently set up
 
 ### Configuration Setup
+
+The project uses xcconfig files to manage different configurations for local development and production builds.
+
+#### For Local Development:
 ```bash
 # Copy configuration template
 cp Config.xcconfig.template Config.xcconfig
 
-# Edit Config.xcconfig with actual values:
-# MAYBE_API_BASE_URL = https://app.maybefinance.com/api/v1
+# Edit Config.xcconfig and uncomment the local development line:
+# MAYBE_API_BASE_URL = http:/$()/localhost:3000/api/v1
 ```
+
+#### For Production/App Store Builds:
+```bash
+# Copy production template
+cp Config-Production.xcconfig.template Config-Production.xcconfig
+
+# Edit Config-Production.xcconfig with your production values
+# Ensure all local overrides in Config.xcconfig are commented out
+```
+
+**Important Configuration Files:**
+- `Config.xcconfig` - Your local configuration (gitignored)
+- `Config-Production.xcconfig` - Your production values (gitignored)
+- `Config.xcconfig.template` - Template for creating Config.xcconfig
+- `Config-Production.xcconfig.template` - Template for creating Config-Production.xcconfig
+
+**Note:** The `$(/`) syntax is required in xcconfig files to properly parse URLs with `//`
 
 ## Architecture
 

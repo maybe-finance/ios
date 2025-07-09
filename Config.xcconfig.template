@@ -2,8 +2,28 @@
 // Copy this file to Config.xcconfig and fill in your actual values
 // DO NOT commit Config.xcconfig to version control
 
-// API Configuration
+// =============================================================================
+// LOCAL DEVELOPMENT CONFIGURATION
+// =============================================================================
+// Uncomment and modify the line below for local development:
+// MAYBE_API_BASE_URL = http:/$()/localhost:3000/api/v1
+
+// Or use your ngrok URL:
+// MAYBE_API_BASE_URL = https:/$()/your-subdomain.ngrok.dev/api/v1
+
+// =============================================================================
+// PRODUCTION CONFIGURATION
+// =============================================================================
+// For production/App Store builds, comment out any local overrides above
+// and ensure Config-Production.xcconfig exists (copy from template):
+#include? "Config-Production.xcconfig"
+
+// Fallback production values if Config-Production.xcconfig doesn't exist:
 MAYBE_API_BASE_URL = https:/$()/app.maybefinance.com/api/v1
 
-// Note: The $(/) syntax is required for xcconfig files to properly parse URLs with //
-// Replace app.maybefinance.com with your actual Maybe instance domain
+// =============================================================================
+// NOTES
+// =============================================================================
+// - The $(/) syntax is required for xcconfig files to properly parse URLs with //
+// - Any values defined above the #include will override the production values
+// - For App Store builds, ensure all local overrides are commented out

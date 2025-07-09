@@ -1,0 +1,11 @@
+// Config-Production.xcconfig.template - Template for production configuration
+// Copy this file to Config-Production.xcconfig and fill in your production values
+// DO NOT commit Config-Production.xcconfig to version control
+
+// Production API Configuration
+MAYBE_API_BASE_URL = https:/$()/your-production-domain.com/api/v1
+
+// App Configuration
+PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.maybe
+
+// Note: The $(/) syntax is required for xcconfig files to properly parse URLs with //

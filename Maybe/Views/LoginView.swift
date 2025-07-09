@@ -373,7 +373,7 @@ struct LoginView: View {
 
                 // Auth buttons
                 VStack(spacing: 12) {
-                    NavigationLink(destination: AuthenticationView(isSignupMode: true)
+                    NavigationLink(destination: SignupFlowView()
                         .environmentObject(authManager)
                         .navigationBarHidden(true)) {
                         Text("Create account")

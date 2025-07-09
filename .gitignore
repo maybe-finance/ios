@@ -1,5 +1,7 @@
 # Configuration files with sensitive data
 Config.xcconfig
+Config-Local.xcconfig
+Config-Production.xcconfig
 
 # Xcode
 #
